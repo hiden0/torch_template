@@ -1,0 +1,4 @@
+pandas
+scikit-learn
+torch==2.5.1
+torchvision
