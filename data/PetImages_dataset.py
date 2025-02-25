@@ -8,7 +8,7 @@ import warnings
 
 
 class ImageDataset(Dataset):
-    def __init__(self, csv_file, split="train", img_size=224):
+    def __init__(self, csv_file, split="train", img_size=256):
         """
         Dataset para cargar imágenes desde un CSV.
         :param csv_file: Ruta al archivo CSV.
@@ -44,7 +44,9 @@ class ImageDataset(Dataset):
         return image, label
 
 
-def get_dataloader(csv_path, split="train", batch_size=32, shuffle=True, num_workers=4):
+def get_dataloader(
+    csv_path, split="train", batch_size=32, shuffle=True, num_workers=4, img_size=256
+):
     """
     Crea un DataLoader basado en la partición de datos.
     :param csv_path: Ruta al archivo CSV.
@@ -56,7 +58,7 @@ def get_dataloader(csv_path, split="train", batch_size=32, shuffle=True, num_wor
     """
     assert split in ["train", "val", "test"], "split debe ser 'train', 'val' o 'test'"
 
-    dataset = ImageDataset(csv_file=csv_path, split=split)
+    dataset = ImageDataset(csv_file=csv_path, split=split, img_size=img_size)
 
     return DataLoader(
         dataset,
