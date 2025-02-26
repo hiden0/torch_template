@@ -46,6 +46,11 @@ class CustomCNN(nn.Module):
         # Capa totalmente conectada
         self.fc = nn.Linear(in_channels * h * w, dense_neurons)
         self.dropout = nn.Dropout(dropout_rate)
+
+        # IMPORTANT!!!! THIS LINE IS OK FOR BINARY CLASSIFICATION, BUT NOT FOR MULTICLASS
+        # self.output_layer = nn.Linear(
+        #     dense_neurons, num_classes if num_classes > 2 else 1
+        # )
         self.output_layer = nn.Linear(dense_neurons, num_classes)
 
     def forward(self, x):

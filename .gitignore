@@ -7,8 +7,9 @@ __pycache__/
 *.so
 
 # Distribution / packaging
-checkpoints/*
-runs/*
+
+runs/checkpoints/*
+runs/training_logs/*
 .vscode/
 .Python
 build/

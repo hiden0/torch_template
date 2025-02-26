@@ -8,19 +8,16 @@ import warnings
 
 
 class ImageDataset(Dataset):
-    def __init__(self, csv_file, split="train", img_size=256):
+    def __init__(self, csv_file, split="train", transform=None):
         """
         Dataset para cargar imágenes desde un CSV.
         :param csv_file: Ruta al archivo CSV.
         :param split: 'train', 'val' o 'test' (según la columna 'split' del CSV).
-        :param img_size: Tamaño al que se redimensionarán las imágenes.
+        :param transform: Transformaciones a aplicar a las imágenes.
         """
         self.data = pd.read_csv(csv_file)
         self.data = self.data[self.data["set"] == split].reset_index(drop=True)
-
-        self.transform = transforms.Compose(
-            [transforms.Resize((img_size, img_size)), transforms.ToTensor()]
-        )
+        self.transform = transform
 
     def __len__(self):
         return len(self.data)
@@ -39,31 +36,32 @@ class ImageDataset(Dataset):
                 for warning in important_warnings:
                     print(f"Warning captured: {warning.message} at {img_path}")
 
-        image = self.transform(image)
+        if self.transform:
+            image = self.transform(image)
 
         return image, label
 
 
 def get_dataloader(
-    csv_path, split="train", batch_size=32, shuffle=True, num_workers=4, img_size=256
+    csv_path, split="train", batch_size=32, num_workers=4, transform=None
 ):
     """
     Crea un DataLoader basado en la partición de datos.
     :param csv_path: Ruta al archivo CSV.
     :param split: 'train', 'val' o 'test'.
     :param batch_size: Tamaño del batch.
-    :param shuffle: Si los datos deben mezclarse.
     :param num_workers: Número de hilos de carga.
+    :param transform: Transformaciones a aplicar a las imágenes.
     :return: DataLoader listo para usar.
     """
     assert split in ["train", "val", "test"], "split debe ser 'train', 'val' o 'test'"
 
-    dataset = ImageDataset(csv_file=csv_path, split=split, img_size=img_size)
+    dataset = ImageDataset(csv_file=csv_path, split=split, transform=transform)
 
     return DataLoader(
         dataset,
         batch_size=batch_size,
-        shuffle=(shuffle if split == "train" else False),
+        shuffle=(True if split == "train" else False),
         num_workers=num_workers,
         pin_memory=torch.cuda.is_available(),
     )
