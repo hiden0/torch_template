@@ -21,7 +21,7 @@ from engine.training_config import select_optimizer
 ### GENERAL ###
 CSV_PATH = "/srv/hdd2/javber/dataset.csv"
 NUM_CLASSES = 2
-EXPERIMENT_NAME = "custom_CNN_2"
+EXPERIMENT_NAME = "custom_CNN_3"
 FROM_CHECKPOINT = False
 CHECKPOINT_PATH = False
 NUM_WORKERS = 8
@@ -31,8 +31,8 @@ BATCH_SIZE = 32
 LEARNING_RATE = 0.001
 SCHEDULER = "step"  # "step" o "plateau"
 SCHEDULER_STEP = 5
-SCHEDULER_REDUCTION = 0.01
-NUM_EPOCHS = 20
+SCHEDULER_REDUCTION = 0.9
+NUM_EPOCHS = 80
 OPTIMIZER = "adamw"
 WEIGHT_DECAY = 0.0001
 IMAGE_SIZE = 256
@@ -50,7 +50,7 @@ SATURATION = 0.2
 HUE = 0.1
 
 ###CNN CONFIG###
-CNN_CONV_LAYERS = [(32, 3), (64, 3), (128, 3)]
+CNN_CONV_LAYERS = [(32, 3), (64, 3), (128, 3), (256, 3)]
 CNN_DROPOUT_RATE = 0.5
 CNN_USE_BATCHNORM = True
 CNN_POOLING_TYPE = "avg"
@@ -88,6 +88,41 @@ if os.path.exists(checkpoint_dir) and not FROM_CHECKPOINT:
 os.makedirs(checkpoint_dir, exist_ok=True)
 os.makedirs(log_dir, exist_ok=True)
 writer = SummaryWriter(log_dir=log_dir)
+
+# Guardar hiperparámetros en TensorBoard
+hparams = {
+    "CSV_PATH": CSV_PATH,
+    "NUM_CLASSES": NUM_CLASSES,
+    "EXPERIMENT_NAME": EXPERIMENT_NAME,
+    "FROM_CHECKPOINT": FROM_CHECKPOINT,
+    "CHECKPOINT_PATH": CHECKPOINT_PATH,
+    "NUM_WORKERS": NUM_WORKERS,
+    "BATCH_SIZE": BATCH_SIZE,
+    "LEARNING_RATE": LEARNING_RATE,
+    "SCHEDULER": SCHEDULER,
+    "SCHEDULER_STEP": SCHEDULER_STEP,
+    "SCHEDULER_REDUCTION": SCHEDULER_REDUCTION,
+    "NUM_EPOCHS": NUM_EPOCHS,
+    "OPTIMIZER": OPTIMIZER,
+    "WEIGHT_DECAY": WEIGHT_DECAY,
+    "IMAGE_SIZE": IMAGE_SIZE,
+    "IMAGENET_MEAN": str(IMAGENET_MEAN),
+    "IMAGENET_STD": str(IMAGENET_STD),
+    "CROP_SCALE": str(CROP_SCALE),
+    "ROTATION_DEGREES": ROTATION_DEGREES,
+    "HORIZONTAL_FLIP_PROB": HORIZONTAL_FLIP_PROB,
+    "BRIGHTNESS": BRIGHTNESS,
+    "CONTRAST": CONTRAST,
+    "SATURATION": SATURATION,
+    "HUE": HUE,
+    "CNN_CONV_LAYERS": str(CNN_CONV_LAYERS),
+    "CNN_DROPOUT_RATE": CNN_DROPOUT_RATE,
+    "CNN_USE_BATCHNORM": CNN_USE_BATCHNORM,
+    "CNN_POOLING_TYPE": CNN_POOLING_TYPE,
+    "CNN_DENSE_NEURONS": CNN_DENSE_NEURONS,
+}
+
+writer.add_hparams(hparams, {}, run_name=f"../{EXPERIMENT_NAME}")
 
 # TRANSFORMS
 train_transforms = transforms.Compose(
