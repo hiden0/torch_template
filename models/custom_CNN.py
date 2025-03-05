@@ -33,7 +33,7 @@ class CustomCNN(nn.Module):
 
             if pooling_type == "max":
                 self.layers.append(nn.MaxPool2d(2))
-                h, w = input_size  # Extraemos altura y ancho
+                h, w = h // 2, w // 2  # Extraemos altura y ancho
             elif pooling_type == "avg":
                 self.layers.append(nn.AvgPool2d(2))
                 h, w = h // 2, w // 2  # Igual que MaxPool2d
