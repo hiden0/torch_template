@@ -6,13 +6,27 @@ import shutil
 import yaml
 from torch.utils.tensorboard import SummaryWriter
 import sys
+from models.custom_CNN import CustomCNN
+from models.pretrained_CNN import (
+    ResNet50,
+    EfficientNetB0,
+    MobileNetV2,
+    VGG16,
+    DenseNet121,
+    InceptionV3,
+)
 
 
 def load_config(config_path):
     with open(config_path, "r") as file:
         config = yaml.safe_load(file)
-    for i in range(len(config["CNN_CONV_LAYERS"])):
-        config["CNN_CONV_LAYERS"][i] = tuple(config["CNN_CONV_LAYERS"][i])
+
+    if config["MODEL"] == "custom_cnn":
+        for i in range(len(config["CNN_CONV_LAYERS"])):
+            config["CNN_CONV_LAYERS"][i] = tuple(config["CNN_CONV_LAYERS"][i])
+    if config["MODEL"] == "inceptionv3" and config["IMAGE_SIZE"] <= 299:
+        print("InceptionV3 requires an image size of at least 299x299. Resized to 299.")
+        config["IMAGE_SIZE"] = 299
     return config
 
 
@@ -131,3 +145,57 @@ def select_optimizer(model, optimizer_name, learning_rate=0.001, w_decay=0):
         return optim.Adadelta(model.parameters(), rho=0.9, eps=1e-6)
     else:
         raise ValueError(f"Invalid optimizer name: {optimizer_name}")
+
+
+def select_model(config, device):
+    if config["MODEL"] == "custom_cnn":
+        model = CustomCNN(
+            input_channels=3,
+            num_classes=config["NUM_CLASSES"],
+            input_size=(config["IMAGE_SIZE"], config["IMAGE_SIZE"]),
+            conv_layers=config["CNN_CONV_LAYERS"],
+            dropout_rate=config["CNN_DROPOUT_RATE"],
+            use_batchnorm=config["CNN_USE_BATCHNORM"],
+            pooling_type=config["CNN_POOLING_TYPE"],
+            dense_neurons=config["CNN_DENSE_NEURONS"],
+        ).to(device)
+    elif config["MODEL"] == "resnet50":
+        model = ResNet50(
+            num_classes=config["NUM_CLASSES"],
+            train_layers=config["NUM_TRAIN_LAYERS"],
+            pretrained=config["PRETRAINED"],
+        ).to(device)
+    elif config["MODEL"] == "efficientnetb0":
+        model = EfficientNetB0(
+            num_classes=config["NUM_CLASSES"],
+            train_layers=config["NUM_TRAIN_LAYERS"],
+            pretrained=config["PRETRAINED"],
+        ).to(device)
+    elif config["MODEL"] == "mobilenetv2":
+        model = MobileNetV2(
+            num_classes=config["NUM_CLASSES"],
+            train_layers=config["NUM_TRAIN_LAYERS"],
+            pretrained=config["PRETRAINED"],
+        ).to(device)
+    elif config["MODEL"] == "vgg16":
+        model = VGG16(
+            num_classes=config["NUM_CLASSES"],
+            train_layers=config["NUM_TRAIN_LAYERS"],
+            pretrained=config["PRETRAINED"],
+        ).to(device)
+    elif config["MODEL"] == "densenet121":
+        model = DenseNet121(
+            num_classes=config["NUM_CLASSES"],
+            train_layers=config["NUM_TRAIN_LAYERS"],
+            pretrained=config["PRETRAINED"],
+        ).to(device)
+    elif config["MODEL"] == "inceptionv3":
+        model = InceptionV3(
+            num_classes=config["NUM_CLASSES"],
+            train_layers=config["NUM_TRAIN_LAYERS"],
+            pretrained=config["PRETRAINED"],
+        ).to(device)
+    else:
+        raise ValueError("Invalid model")
+
+    return model

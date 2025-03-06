@@ -56,7 +56,25 @@ def objective(trial, config_path):
     config["SATURATION"] = trial.suggest_uniform("saturation", 0.0, 0.5)
     config["HUE"] = trial.suggest_uniform("hue", 0.0, 0.5)
 
-    ### CNN CONFIG ###
+    ### PRETRAINED CNN CONFIG ###
+    config["MODEL"] = trial.suggest_categorical(
+        "model",
+        [
+            "custom_cnn",
+            "resnet50",
+            "efficientnetb0",
+            "mobilenetv2",
+            "vgg16",
+            "densenet121",
+            "inceptionv3",
+        ],
+    )
+    config["PRETRAINED"] = trial.suggest_categorical("pretrained", [True, False])
+    config["NUM_TRAIN_LAYERS"] = trial.suggest_categorical(
+        "num_train_layers", [1, 2, 3, "all"]
+    )
+
+    ###CUSTOM CNN CONFIG (ONLY AVAILABLE WITH CUSTOM_CNN) ###
     config["CNN_DROPOUT_RATE"] = trial.suggest_uniform("dropout_rate", 0.1, 0.5)
     config["CNN_USE_BATCHNORM"] = trial.suggest_categorical(
         "use_batchnorm", [True, False]

@@ -12,7 +12,15 @@ import optuna
 base_dir = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(os.path.join(base_dir, ".."))
 
-from models.custom_CNN import CustomCNN
+# from models.custom_CNN import CustomCNN
+# from models.pretrained_CNN import (
+#     ResNet50,
+#     EfficientNetB0,
+#     MobileNetV2,
+#     VGG16,
+#     DenseNet121,
+#     InceptionV3,
+# )
 from data.PetImages_dataset import get_dataloader
 from engine.metrics import compute_metrics, plot_confusion_matrix
 from engine.training_utils import (
@@ -22,6 +30,7 @@ from engine.training_utils import (
     setup_directories,
     save_hparams,
     save_checkpoint,
+    select_model,
 )
 
 
@@ -79,17 +88,7 @@ def train_model(config, trial=None):
         val_transforms,
     )
 
-    model = CustomCNN(
-        input_channels=3,
-        num_classes=config["NUM_CLASSES"],
-        input_size=(config["IMAGE_SIZE"], config["IMAGE_SIZE"]),
-        conv_layers=config["CNN_CONV_LAYERS"],
-        dropout_rate=config["CNN_DROPOUT_RATE"],
-        use_batchnorm=config["CNN_USE_BATCHNORM"],
-        pooling_type=config["CNN_POOLING_TYPE"],
-        dense_neurons=config["CNN_DENSE_NEURONS"],
-    ).to(device)
-
+    model = select_model(config, device)
     criterion = nn.CrossEntropyLoss()
     optimizer = select_optimizer(
         model, config["OPTIMIZER"], config["LEARNING_RATE"], config["WEIGHT_DECAY"]

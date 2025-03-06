@@ -1,7 +1,7 @@
 ### GENERAL ###
 CSV_PATH: "/srv/hdd2/javber/dataset.csv"
 NUM_CLASSES: 2
-EXPERIMENT_NAME: "custom_CNN_1"
+EXPERIMENT_NAME: "resnet_test"
 FROM_CHECKPOINT: False
 CHECKPOINT_PATH: False
 NUM_WORKERS: 8
@@ -16,7 +16,7 @@ NUM_EPOCHS: 100
 OPTIMIZER: "adamw"
 WEIGHT_DECAY: 0.0001
 IMAGE_SIZE: 64
-EARLY_STOPPING_PATIENCE: 2
+EARLY_STOPPING_PATIENCE: 5
 
 ### DATA AUGMENTATION ###
 IMAGENET_MEAN: [0.485, 0.456, 0.406]
@@ -29,9 +29,17 @@ CONTRAST: 0.2
 SATURATION: 0.2
 HUE: 0.1
 
-### CNN CONFIG ###
+
+### PRETRAINED MODEL CONFIG ###
+MODEL: "inceptionv3" #  "custom_cnn", "resnet50", efficientnetb0", "mobilenetv2", "vgg16", "densenet121", "inceptionv3"
+PRETRAINED: True    # Train with imagenet weights
+NUM_TRAIN_LAYERS: 2  #If TRAIN_BACKBONE==FALSE, choose number of layers to train (1: Last layer, 2: Last 2 layers, 3: Last 3 layers, "all": All layers)
+
+
+### CUSTOM CNN CONFIG  (ONLY IF MODEL == "custom_cnn") ###
 CNN_CONV_LAYERS: [[32, 3], [64, 3], [128, 3], [256, 3]]
 CNN_DROPOUT_RATE: 0.5
 CNN_USE_BATCHNORM: True
 CNN_POOLING_TYPE: "max"
 CNN_DENSE_NEURONS: 256
+
