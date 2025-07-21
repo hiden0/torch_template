@@ -8,7 +8,6 @@ import shutil
 import yaml
 import argparse
 import optuna
-
 base_dir = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(os.path.join(base_dir, ".."))
 
@@ -46,7 +45,7 @@ def objective(trial, config_path):
     config["IMAGE_SIZE"] = trial.suggest_categorical("image_size", [64, 128, 256])
 
     ### DATA AUGMENTATION ###
-    config["CROP_SCALE"] = (trial.suggest_uniform("crop_scale_min", 0.5, 1.0), 1.0)
+    config["CROP_SCALE"] = [trial.suggest_uniform("crop_scale_min", 0.5, 1.0), 1.0]
     config["ROTATION_DEGREES"] = trial.suggest_int("rotation_degrees", 0, 45)
     config["HORIZONTAL_FLIP_PROB"] = trial.suggest_uniform(
         "horizontal_flip_prob", 0.0, 1.0
@@ -66,7 +65,7 @@ def objective(trial, config_path):
             "mobilenetv2",
             "vgg16",
             "densenet121",
-            "inceptionv3",
+            #"inceptionv3",
         ],
     )
     config["PRETRAINED"] = trial.suggest_categorical("pretrained", [True, False])
@@ -103,7 +102,26 @@ def objective(trial, config_path):
         else:
             filters = filters * 2
         config["CNN_CONV_LAYERS"].append([filters, 3])
+    
+    
+    def flow_style_list_representer(dumper, data):
+        return dumper.represent_sequence('tag:yaml.org,2002:seq', data, flow_style=True)
 
+    yaml.add_representer(list, flow_style_list_representer)
+    
+    config_path = f"/app/configs/{config['EXPERIMENT_NAME']}/trial_{trial.number}.yml"
+    os.makedirs(os.path.dirname(config_path), exist_ok=True)
+    with open(config_path, "w") as f:
+        total_items = len(config)
+        # Iteramos sobre cada par (clave, valor) del diccionario
+        for i, (key, value) in enumerate(config.items()):
+            # Guardamos cada variable como un diccionario de un solo elemento
+            yaml.dump({key: value}, f)
+            
+            # Añadimos un salto de línea después de cada variable, excepto la última
+            # if i < total_items - 1:
+            #     f.write('\n')
+        
     resultado = train_model(config, trial)
     torch.cuda.empty_cache()
 
@@ -124,6 +142,12 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     study = optuna.create_study(direction="maximize")
-    study.optimize(lambda trial: objective(trial, args.config), n_trials=100, n_jobs=1)
+    study.optimize(lambda trial: objective(trial, args.config), n_trials=30, n_jobs=1)
     print(f"Best trial: {study.best_trial.value}")
     print(f"Best hyperparameters: {study.best_trial.params}")
+    
+        # Guardar la mejor configuración en un YAML
+    best_config_path = "best_optuna_config.yaml"
+    with open(best_config_path, "w") as f:
+        yaml.dump(study.best_trial.params, f)
+    print(f"Mejor configuración guardada en {best_config_path}")

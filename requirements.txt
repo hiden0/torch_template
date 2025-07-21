@@ -6,3 +6,6 @@ tensorboard
 matplotlib
 seaborn
 optuna
+tqdm
+transformers
+opencv-python

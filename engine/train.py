@@ -21,7 +21,7 @@ sys.path.append(os.path.join(base_dir, ".."))
 #     DenseNet121,
 #     InceptionV3,
 # )
-from data.PetImages_dataset import get_dataloader
+from data.Tecnove_dataset import get_dataloader
 from engine.metrics import compute_metrics, plot_confusion_matrix
 from engine.training_utils import (
     select_optimizer,
